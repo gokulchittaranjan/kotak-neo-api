@@ -38,7 +38,7 @@ class NeoAPI:
     """
 
     def __init__(self, environment="uat", access_token=None, consumer_key=None, consumer_secret=None,
-                 reuse_session=None,
+                 configuration=None,
                  neo_fin_key=None):
         """
     Initializes the class and sets up the necessary configurations for the API client.
@@ -64,33 +64,24 @@ class NeoAPI:
         self.on_error = None
         self.on_close = None
         self.on_open = None
-
-        if not access_token:
+        if configuration is not None:
+            self.configuration = configuration
+        else:
             neo_api_client.req_data_validation.validate_configuration(consumer_key, consumer_secret)
             self.configuration = neo_api_client.NeoUtility(consumer_key=consumer_key, consumer_secret=consumer_secret,
                                                            host=environment)
-            self.api_client = ApiClient(self.configuration)
-            try:
-                session_init = neo_api_client.LoginAPI(self.api_client).session_init()
-                print(json.dumps({"data": session_init}))
-            except ApiException as ex:
-                error = ex
-        if reuse_session:
-            self.configuration = neo_api_client.NeoUtility(access_token=access_token, host=environment)
-            self.api_client = ApiClient(self.configuration)
-            self.configuration.bearer_token = reuse_session.get("access_token")
-            self.configuration.edit_token = reuse_session.get("session_token")
-            self.configuration.edit_sid = reuse_session.get("sid")
-            self.configuration.serverId = reuse_session.get("serverId")
-        elif access_token:
+        
+        self.api_client = ApiClient(self.configuration)
+        try:
+            session_init = neo_api_client.LoginAPI(self.api_client).session_init()
+            print(json.dumps({"data": session_init}))
+        except ApiException as ex:
+            error = ex
+        if access_token is not None:
             self.configuration = neo_api_client.NeoUtility(access_token=access_token, host=environment)
             self.api_client = ApiClient(self.configuration)
 
-        self.reuse_session = {"access_token":f"{self.configuration.bearer_token}",
-                              "session_token":f'{self.configuration.edit_token}',
-                              "sid":f"{self.configuration.edit_sid}",
-                              "serverId" : f"{self.configuration.serverId}",
-                              }
+        print(f"Access Token : {self.configuration.bearer_token}")
         self.NeoWebSocket = None
         self.configuration.neo_fin_key = neo_fin_key
 
@@ -149,12 +140,6 @@ class NeoAPI:
             edit_token: sets the edit token obtained from the API response.
         """
         edit_token = neo_api_client.LoginAPI(self.api_client).login_2fa(OTP)
-
-        self.reuse_session = {"access_token":f"{self.configuration.bearer_token}",
-                              "session_token":f'{self.configuration.edit_token}',
-                              "sid":f"{self.configuration.edit_sid}",
-                              "serverId" : f"{self.configuration.serverId}",
-                             }
         return edit_token
 
     def place_order(self, exchange_segment, product, price, order_type, quantity, validity, trading_symbol,
