@@ -48,6 +48,8 @@ class RESTClientObject(object):
         if 'Content-Type' not in headers:
             headers['Content-Type'] = 'application/json'
 
+        print("Headers", headers)
+
         try:
             if method in ['POST', 'PUT', 'PATCH', 'DELETE']:
                 if query_params:

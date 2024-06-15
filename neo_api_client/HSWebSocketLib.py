@@ -3,6 +3,17 @@ import json
 import ssl
 
 import websocket
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(name)s %(levelname)-8s  %(message)s',
+    datefmt='(%H:%M:%S)')
+
+# disable all loggers from different files
+logging.getLogger('asyncio').setLevel(logging.ERROR)
+logging.getLogger('asyncio.coroutines').setLevel(logging.ERROR)
+logging.getLogger('websockets.server').setLevel(logging.ERROR)
+logging.getLogger('websockets.protocol').setLevel(logging.ERROR)
 
 # from neo_api_client.logger import logger
 

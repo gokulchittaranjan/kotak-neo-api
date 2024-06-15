@@ -11,25 +11,31 @@ class ScripSearch(object):
     def __init__(self, api_client):
         self.api_client = api_client
         self.rest_client = api_client.rest_client
+        self.scrip_report = None
+        self.exchange_segment_data = {}
 
     def scrip_search(self, symbol, exchange_segment, expiry, option_type, strike_price,
-                     ignore_50multiple):
+                     ignore_50multiple, use_cache=True):
         header_params = {'Authorization': "Bearer " + self.api_client.configuration.bearer_token}
 
         URL = self.api_client.configuration.get_url_details("scrip_master")
 
         try:
-            scrip_report = self.rest_client.request(
-                url=URL, method='GET',
-                headers=header_params
-            )
-
-            data = scrip_report.json()["data"]
+            if self.scrip_report is None:
+                self.scrip_report = self.rest_client.request(
+                    url=URL, method='GET',
+                    headers=header_params
+                )
+            
+            
+            data = self.scrip_report.json()["data"]
             if exchange_segment is not None:
-                exchange_segment_csv = [file for file in data["filesPaths"] if exchange_segment.lower() in file.lower()]
-                response = requests.get(exchange_segment_csv[0])
-                csv_text = response.text
-                df = pd.read_csv(io.StringIO(csv_text))
+                if exchange_segment not in self.exchange_segment_data:
+                    exchange_segment_csv = [file for file in data["filesPaths"] if exchange_segment.lower() in file.lower()]
+                    response = requests.get(exchange_segment_csv[0])
+                    csv_text = response.text
+                    self.exchange_segment_data[exchange_segment] = csv_text
+                df = pd.read_csv(io.StringIO(self.exchange_segment_data[exchange_segment]))
                 df = df.rename(columns=lambda x: x.strip())
                 if expiry and strike_price and not exchange_segment.endswith('fo') and exchange_segment != 'mcx':
                     return {'error': [

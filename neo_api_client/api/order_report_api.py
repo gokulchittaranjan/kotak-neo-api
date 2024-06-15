@@ -8,6 +8,7 @@ class OrderReportAPI(object):
         self.rest_client = api_client.rest_client
 
     def ordered_books(self):
+        # print(f"Order Books: {self.api_client.configuration.bearer_token}")
         header_params = {
             'Authorization': "Bearer " + self.api_client.configuration.bearer_token,
             "Sid": self.api_client.configuration.edit_sid,

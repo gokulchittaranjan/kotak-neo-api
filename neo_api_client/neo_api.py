@@ -74,14 +74,14 @@ class NeoAPI:
         self.api_client = ApiClient(self.configuration)
         try:
             session_init = neo_api_client.LoginAPI(self.api_client).session_init()
-            print(json.dumps({"data": session_init}))
+            # print(json.dumps({"data": session_init}))
         except ApiException as ex:
             error = ex
         if access_token is not None:
             self.configuration = neo_api_client.NeoUtility(access_token=access_token, host=environment)
             self.api_client = ApiClient(self.configuration)
 
-        print(f"Access Token : {self.configuration.bearer_token}")
+        # print(f"Access Token : {self.configuration.bearer_token}")
         self.NeoWebSocket = None
         self.configuration.neo_fin_key = neo_fin_key
 
